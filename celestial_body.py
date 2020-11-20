@@ -17,9 +17,10 @@ class CelestialBody:
 
     Constructor Parameters
     ----------------------
-    - name (string): The name of the celestial body being represented.
-    - body_type (CelestialType): An enum member representing the type of 
+    - type (CelestialType): An enum member representing the type of 
     celestial body being represented.
+    - trojan (bool): True if the body is part of a co-orbital Trojan pair.
+    - name (string): The name of the celestial body being represented.
     - mass (float): The mass in kilograms of the body being represented.
     - radius (float): The radius in meters of the body being represented.
     - position (1-d array): A 3-d vector of the form [x, y, z] representing 
@@ -30,11 +31,11 @@ class CelestialBody:
     directions.
     """
 
-    def __init__(self, name: str, body_type: CelestialType, mass: float,\
-        radius: float, position: np.array, velocity: np.array,\
-        apoapsis: float, periapsis: float) -> None:
+    def __init__(self, type: CelestialType, trojan: bool, name: str,\
+        mass: float, radius: float, position: np.array, velocity: np.array):
+        self.type: CelestialType = type
+        self.trojan: bool = trojan
         self.name: str = name
-        self.body_type: CelestialType = body_type
         self.mass: float = mass
         self.radius: float = radius
         self.position: np.array = position
@@ -94,7 +95,7 @@ class CelestialBody:
         return e
 
 
-    def orbital_period(self, central: CelestialBody) -> float:
+    def period(self, central: CelestialBody) -> float:
         """
         Computes the orbital period of the body relative to a given stationary 
         central body.

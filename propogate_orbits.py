@@ -28,16 +28,13 @@ def g(index: int, pos: np.array, bodies: list[CelestialBody]):
 
     # Compute the sum total of the accelerations from the other bodies.
     g = np.zeros(3)
-    for i in range(1, len(bodies)):
+    for i, body in enumerate(bodies):
         # Skip main when iterating over the list.
         if i != index:
-            # Position vector and mass of the given body.
-            mass_body = bodies[i].mass
-            pos_body = bodies[i].position
             # Relative position.
-            r = pos - pos_body
+            r = pos - body.position
             # Contribution to main's acceleration.
-            g -= G * mass_body * r / (np.linalg.norm(r) ** 3)
+            g -= G * body.mass * r / (np.linalg.norm(r) ** 3)
 
     return g
 
@@ -62,24 +59,19 @@ def propogate_orbits(bodies: list[CelestialBody], time_step: float)\
     """
 
     # Update the position and velocity of each body in the list.
-    for i in range(1, len(bodies)):
-        pos = bodies[i].position
-        vel = bodies[i].velocity
-
-        # Use RK4 method to compute the new velocity and position.
-        k1v = g(i, pos, bodies) * time_step
-        k1x = vel * time_step
-        k2v = g(i, pos + k1x / 2, bodies) * time_step
-        k2x = (vel + k1v / 2) * time_step
-        k3v = g(i, pos + k2x / 2) * time_step
-        k3x = (vel + k2v / 2) * time_step
-        k4v = g(i, pos + k3x, bodies) * time_step
-        k4x = (vel + k3v) * time_step
-        vel += (k1v + (2 * k2v) + (2 * k3v) + k4v) / 6
-        pos += (k1x + (2 * k2x) + (2 * k3x) + k4x) / 6
-
-        # Update the velocity and position.
-        bodies[i].position = pos
-        bodies[i].velocity = vel
+    for i, body in enumerate(bodies):
+        # The central body in the 0th position is assumed to be stationary.
+        if i != 0:
+            # Use RK4 method to update the velocity and position.
+            k1v = g(i, body.position, bodies) * time_step
+            k1x = body.velocity * time_step
+            k2v = g(i, body.position + k1x / 2, bodies) * time_step
+            k2x = (body.velocity + k1v / 2) * time_step
+            k3v = g(i, body.position + k2x / 2) * time_step
+            k3x = (body.velocity + k2v / 2) * time_step
+            k4v = g(i, body.position + k3x, bodies) * time_step
+            k4x = (body.velocity + k3v) * time_step
+            body.velocity += (k1v + (2 * k2v) + (2 * k3v) + k4v) / 6
+            body.position += (k1x + (2 * k2x) + (2 * k3x) + k4x) / 6
 
     return bodies
