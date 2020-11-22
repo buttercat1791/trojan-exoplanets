@@ -1,6 +1,6 @@
 import argparse
 import numpy as np
-from typing import Tuple
+from typing import List, Union
 
 from celestial_body import CelestialBody, CelestialType
 from propogate_orbits import propogate_orbits
@@ -21,7 +21,7 @@ def parse_line(line: str) -> CelestialBody:
     parameters given by the input line.
     """
 
-    params: list[str] = line.split(" ")
+    params: List[str] = line.split(" ")
     
     # Variables used to construct the CelestialBody object.
     body_type: CelestialType = -1
@@ -80,7 +80,7 @@ def parse_line(line: str) -> CelestialBody:
     return body
     
 
-def parse_system(file: str) -> tuple(list[CelestialBody], tuple(int, int)):
+def parse_system(file: str) -> Union[list, tuple]:
     """
     Initializes the starting conditions of the simulation from a file with the 
     given name.
@@ -98,9 +98,9 @@ def parse_system(file: str) -> tuple(list[CelestialBody], tuple(int, int)):
 
     infile = open(file, "r")
 
-    bodies: list[CelestialBody] = list()
+    bodies: List[CelestialBody] = list()
 
-    lines: list[str] = infile.readlines()
+    lines: List[str] = infile.readlines()
     star_count = 0
     trojan_count = 0
     trojans = (0, 0)
@@ -162,8 +162,8 @@ def check_margins(trojan1: CelestialBody, trojan2: CelestialBody,\
     return p_diff > margin
 
 
-def simulate(bodies: list[CelestialBody], time_step: int,\
-    trojans: Tuple(int, int), margin: float):
+def simulate(bodies: List[CelestialBody], time_step: int,\
+    trojans: tuple, margin: float):
     """
     Takes the parsed parameters and runs a simulation with them.
 

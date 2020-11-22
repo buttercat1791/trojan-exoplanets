@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp
+from typing import List
 
 from celestial_body import CelestialBody
 
@@ -8,7 +9,7 @@ from celestial_body import CelestialBody
 G = 6.67430e-11
 
 
-def g(index: int, pos: np.array, bodies: list[CelestialBody]):
+def g(index: int, pos: np.array, bodies: List[CelestialBody]):
     """
     Computes the acceleration due to gravity on a given body as a combination 
     of many other celestial bodies.
@@ -39,8 +40,8 @@ def g(index: int, pos: np.array, bodies: list[CelestialBody]):
     return g
 
 
-def propogate_orbits(bodies: list[CelestialBody], time_step: float)\
-    -> list[CelestialBody]:
+def propogate_orbits(bodies: List[CelestialBody], time_step: float)\
+    -> List[CelestialBody]:
     """
     Propogates the orbits of bodies in a planetary system around a single fixed 
     central star.

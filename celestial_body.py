@@ -1,8 +1,9 @@
 from enum import Enum
 import numpy as np
 
-from celestial_body import CelestialBody
-from propogate_orbits import G
+
+# Newton's Gravitational Constant.
+G = 6.67430e-11
 
 
 class CelestialType(Enum):
@@ -42,7 +43,7 @@ class CelestialBody:
         self.velocity: np.array = velocity
 
 
-    def angular_momentum(self, central: CelestialBody) -> np.array:
+    def angular_momentum(self, central: 'CelestialBody') -> np.array:
         """
         Computes the specific relative angular momentum between the body and 
         the given central body in the system.
@@ -68,7 +69,7 @@ class CelestialBody:
         return h
 
 
-    def eccentricity(self, central: CelestialBody) -> float:
+    def eccentricity(self, central: 'CelestialBody') -> float:
         """
         Estimates the eccentricity of the body's orbit from it's apoapsis and 
         periapsis relative to the central body.
@@ -95,7 +96,7 @@ class CelestialBody:
         return e
 
 
-    def period(self, central: CelestialBody) -> float:
+    def period(self, central: 'CelestialBody') -> float:
         """
         Computes the orbital period of the body relative to a given stationary 
         central body.
@@ -120,7 +121,7 @@ class CelestialBody:
         return mu
 
 
-    def specific_orbital_energy(self, central: CelestialBody) -> float:
+    def specific_orbital_energy(self, central: 'CelestialBody') -> float:
         """
         Computes the specific orbital energy relative to a central body.
 
@@ -147,7 +148,7 @@ class CelestialBody:
         return epsilon
 
 
-    def semimajor_axis(self, central: CelestialBody) -> float:
+    def semimajor_axis(self, central: 'CelestialBody') -> float:
         """
         Computes the semi-major axis of the body's orbit around the system's 
         central body.
@@ -173,7 +174,8 @@ class CelestialBody:
         return a
 
 
-    def standard_gravitational_parameter(self, central: CelestialBody) -> float:
+    def standard_gravitational_parameter(self, central: 'CelestialBody')\
+        -> float:
         """
         Computes the standard gravitational parameter of the body relative to a 
         central body around which it orbits.
