@@ -80,7 +80,7 @@ def parse_line(line: str) -> CelestialBody:
     return body
     
 
-def parse_system(file: str) -> Union[list, tuple]:
+def parse_system(file: str) -> Union[list, list]:
     """
     Initializes the starting conditions of the simulation from a file with the 
     given name.
@@ -103,7 +103,7 @@ def parse_system(file: str) -> Union[list, tuple]:
     lines: List[str] = infile.readlines()
     star_count = 0
     trojan_count = 0
-    trojans = (0, 0)
+    trojans = [0, 0]
     for i, line in enumerate(lines):
         body = parse_line(line)
         # Keep track of the number of stars in the system.
@@ -128,7 +128,7 @@ def parse_system(file: str) -> Union[list, tuple]:
             if bodies[i].type == CelestialType.STAR:
                 bodies[0], bodies[i] = bodies[i], bodies[0]
 
-    return bodies
+    return bodies, trojans
 
 
 def check_margins(trojan1: CelestialBody, trojan2: CelestialBody,\
@@ -159,11 +159,11 @@ def check_margins(trojan1: CelestialBody, trojan2: CelestialBody,\
     p_diff = (diff / avg) * 100
 
     # Will return true if the percent difference exceeds the margin.
-    return p_diff > margin
+    return not (p_diff > margin)
 
 
 def simulate(bodies: List[CelestialBody], time_step: int,\
-    trojans: tuple, margin: float):
+    trojans: list, margin: float):
     """
     Takes the parsed parameters and runs a simulation with them.
 
@@ -204,8 +204,9 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
                 bodies[0], margin)
 
         # Every 1000 years, print a status to indicate the program is working.
-        if int(time / YEAR) % 1000 == 0:
+        if int(time / YEAR) % 1000 == 0 and (years > 0):
             print("Simulating...")
+            print(bodies[trojans[0]].period(bodies[0]))
 
     # After the simulation loop finishes, indicate how long it lasted.
     print(f"\nThe Trojan pair remained stable for {years} years.")

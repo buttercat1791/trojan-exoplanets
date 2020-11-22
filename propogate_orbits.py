@@ -68,7 +68,7 @@ def propogate_orbits(bodies: List[CelestialBody], time_step: float)\
             k1x = body.velocity * time_step
             k2v = g(i, body.position + k1x / 2, bodies) * time_step
             k2x = (body.velocity + k1v / 2) * time_step
-            k3v = g(i, body.position + k2x / 2) * time_step
+            k3v = g(i, body.position + k2x / 2, bodies) * time_step
             k3x = (body.velocity + k2v / 2) * time_step
             k4v = g(i, body.position + k3x, bodies) * time_step
             k4x = (body.velocity + k3v) * time_step
