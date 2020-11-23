@@ -40,7 +40,7 @@ def g(index: int, pos: np.array, bodies: List[CelestialBody]):
     return g
 
 
-def propogate_orbits(bodies: List[CelestialBody], time_step: float)\
+def propogate_Runge_Kutta(bodies: List[CelestialBody], time_step: float)\
     -> List[CelestialBody]:
     """
     Propogates the orbits of bodies in a planetary system around a single fixed 
@@ -64,6 +64,7 @@ def propogate_orbits(bodies: List[CelestialBody], time_step: float)\
         # The central body in the 0th position is assumed to be stationary.
         if i != 0:
             # Use RK4 method to update the velocity and position.
+            temp_pos = body.position
             k1v = g(i, body.position, bodies) * time_step
             k1x = body.velocity * time_step
             k2v = g(i, body.position + k1x / 2, bodies) * time_step
@@ -74,5 +75,43 @@ def propogate_orbits(bodies: List[CelestialBody], time_step: float)\
             k4x = (body.velocity + k3v) * time_step
             body.velocity += (k1v + (2 * k2v) + (2 * k3v) + k4v) / 6
             body.position += (k1x + (2 * k2x) + (2 * k3x) + k4x) / 6
+            body.previous_position = temp_pos
 
+    return bodies
+
+
+def propogate_Verlet(bodies: List[CelestialBody], time_step: float)\
+    -> List[CelestialBody]:
+    """
+    Uses the Verlet method of numerical integration to propogate the bodies in 
+    a given n-body system.
+
+    Parameters
+    ----------
+    - bodies (list of CelestialBody objects): A list of all the celestial 
+    bodies in the system, where the first object in the list is the central 
+    star.
+    - time_step (float): The size of the time step in seconds.
+
+    Returns
+    -------
+    - bodies (list of CelestialBody objects): The input bodies, updated with 
+    new positions and velocities.
+    """
+
+    # Update the position and velocity of each body in the list.
+    for i, body in enumerate(bodies):
+        # Skip the central body in the 0th position.
+        if i != 0:
+            # Use the Velocity Verlet method.
+            # Update position to x(t+dt).
+            body.position += (body.velocity * time_step)\
+                + (0.5 * body.acceleration * time_step * time_step)
+            # Compute a(t+dt).
+            acc = g(i, body.position, bodies)
+            # Update velocity to v(t+dt).
+            body.velocity += 0.5 * (body.acceleration + acc) * time_step
+            # Update acceleration to a(t+dt).
+            body.acceleration = acc
+    
     return bodies

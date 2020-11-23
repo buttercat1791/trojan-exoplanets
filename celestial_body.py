@@ -41,6 +41,7 @@ class CelestialBody:
         self.radius: float = radius
         self.position: np.array = position
         self.velocity: np.array = velocity
+        self.acceleration: np.array = np.zeros(3)
 
 
     def angular_momentum(self, central: 'CelestialBody') -> np.array:
@@ -112,13 +113,13 @@ class CelestialBody:
         """
 
         # Semi-major axis.
-        a = self.semimajor_axis(central)
+        a = abs(self.semimajor_axis(central))
         # Standard gravitational parameter.
-        mu = self.standard_gravitational_parameter(central)
+        mu = (self.standard_gravitational_parameter(central))
 
         T = 2 * np.pi * np.sqrt((a ** 3) / mu)
 
-        return mu
+        return T
 
 
     def specific_orbital_energy(self, central: 'CelestialBody') -> float:
@@ -139,7 +140,7 @@ class CelestialBody:
         # Orbital distance.
         r = np.linalg.norm(self.position - central.position)
         # Relative orbital speed.
-        v = np.sqrt(G * central.mass / r)
+        v = np.linalg.norm(self.velocity - central.velocity)
         # Standard gravitational parameter.
         mu = self.standard_gravitational_parameter(central)
 
@@ -169,7 +170,7 @@ class CelestialBody:
         # Specific energy.
         epsilon = self.specific_orbital_energy(central)
 
-        a = -mu / (2 * epsilon)
+        a = -(mu / (2 * epsilon))
 
         return a
 
@@ -190,6 +191,6 @@ class CelestialBody:
         - mu (float): The standard gravitational parameter of the two masses.
         """
 
-        mu = G * (self.mass + central.mass)
+        mu = G * central.mass
 
         return mu

@@ -1,9 +1,10 @@
 import argparse
+import matplotlib.pyplot as plt
 import numpy as np
 from typing import List, Union
 
 from celestial_body import CelestialBody, CelestialType
-from propogate_orbits import propogate_orbits
+from propogate_orbits import g, propogate_Verlet
 
 
 def parse_line(line: str) -> CelestialBody:
@@ -162,6 +163,32 @@ def check_margins(trojan1: CelestialBody, trojan2: CelestialBody,\
     return not (p_diff > margin)
 
 
+def plot_periods(t: np.array, p1: np.array, p1_name: str, p2: np.array,\
+    p2_name: str):
+    """
+    Plots the periods vs. time of the given Trojan pair.
+
+    Parameters
+    ----------
+    - t (1-d array): An array of time values, where each value represents a 
+    number of years that have passed.
+    - p1 (1-d array): An array of the same length as t giving the orbital 
+    period in days of one member of the Trojan pair for each year in t.
+    - p1_name (string): The name of one member of the Trojan pair.
+    - p2 (1-d array): An array of the same length as t giving the orbital 
+    period in days of the other member of the Trojan pair for each year in t.
+    - p2_name (string): The name of the other member of the Trojan pair.
+    """
+
+    plt.title("Periods vs. Time")
+    plt.xlabel("Time (Years)")
+    plt.ylabel("Period (Days)")
+    plt.plot(t, p1, 'r-', label=p1_name)
+    plt.plot(t, p2, 'b-', label=p2_name)
+    plt.legend()
+    plt.show()
+
+
 def simulate(bodies: List[CelestialBody], time_step: int,\
     trojans: list, margin: float):
     """
@@ -183,6 +210,8 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
 
     # Length of a year in seconds.
     YEAR: float = 60 * 60 * 24 * 365.25
+    # Length of a day in seconds.
+    DAY = 60 * 60 * 24
     # Time counter (holds time elapsed in seconds).
     time: float = 0
     # Year counter (counts number of years elapsed).
@@ -190,26 +219,43 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
     # Set to false to end the simulation.
     in_margin: bool = True
 
+    # Arrays to hold the elapsed number of years and the corresponding orbital 
+    # periods to track change over time.
+    t = np.array([])
+    p1 = np.array([])
+    p2 = np.array([])
+
+    # Initialize the accelerations.
+    for i, body in enumerate(bodies):
+        body.acceleration = g(i, body.position, bodies)
+
     while in_margin:
         # Move the planets (the star stays still) and update the time.
-        bodies = propogate_orbits(bodies=bodies, time_step=time_step)
+        bodies = propogate_Verlet(bodies=bodies, time_step=time_step)
         time += time_step
 
         # Round down to get the number of elapsed years. Update the years 
         # counter if necessary.
         if int(time / YEAR) > years:
             years += 1
+            # Update our output arrays appropriately.
+            t = np.append(t, years)
+            p1 = np.append(p1, bodies[trojans[0]].period(bodies[0]) / DAY)
+            p2 = np.append(p2, bodies[trojans[1]].period(bodies[0]) / DAY)
             # Check once a year to see if the Trojan pair is within margins.
             in_margin = check_margins(bodies[trojans[0]], bodies[trojans[1]],\
                 bodies[0], margin)
-
-        # Every 1000 years, print a status to indicate the program is working.
-        if int(time / YEAR) % 1000 == 0 and (years > 0):
-            print("Simulating...")
-            print(bodies[trojans[0]].period(bodies[0]))
+            # Print a status to indicate the program is working.
+            if years % 100 == 0:
+                print(f"{years} years elapsed")
+                print(f"P1 = {bodies[trojans[0]].period(bodies[0]) / DAY}")
+                print(f"P2 = {bodies[trojans[1]].period(bodies[0]) / DAY}")
 
     # After the simulation loop finishes, indicate how long it lasted.
     print(f"\nThe Trojan pair remained stable for {years} years.")
+
+    # Plot the change in orbital periods over time.
+    plot_periods(t, p1, bodies[trojans[0]].name, p2, bodies[trojans[1]].name)
 
 
 if __name__ == "__main__":
