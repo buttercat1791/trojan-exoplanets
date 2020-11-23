@@ -1,10 +1,16 @@
 import argparse
+from enum import Enum
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import List, Union
 
 from celestial_body import CelestialBody, CelestialType
-from propogate_orbits import g, propogate_Verlet
+from propogate_orbits import g, propogate_Runge_Kutta, propogate_Verlet
+
+
+class Integrator(Enum):
+    RK4 = 0
+    VERLET = 1
 
 
 def parse_line(line: str) -> CelestialBody:
@@ -190,7 +196,7 @@ def plot_periods(t: np.array, p1: np.array, p1_name: str, p2: np.array,\
 
 
 def simulate(bodies: List[CelestialBody], time_step: int,\
-    trojans: list, margin: float):
+    trojans: list, margin: float, integrator: Integrator):
     """
     Takes the parsed parameters and runs a simulation with them.
 
@@ -206,6 +212,7 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
     co-orbital exoplanets being investigated.
     - margin (float): The percent deviation allowed from a 1:1 resonance 
     between the Trojan planets before the simulation is stopped.
+    - integrator (Integrator enum): The integration method to be used.
     """
 
     # Length of a year in seconds.
@@ -224,6 +231,13 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
     t = np.array([])
     p1 = np.array([])
     p2 = np.array([])
+
+    # Choose the integration method.
+    propogator = propogate_Verlet
+    if integrator == Integrator.RK4:
+        propogator = propogate_Runge_Kutta
+    elif integrator == Integrator.VERLET:
+        propogator = propogate_Verlet
 
     # Initialize the accelerations.
     for i, body in enumerate(bodies):
@@ -251,6 +265,11 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
                 print(f"P1 = {bodies[trojans[0]].period(bodies[0]) / DAY}")
                 print(f"P2 = {bodies[trojans[1]].period(bodies[0]) / DAY}")
 
+        # Plot the periods every 100,000 years.
+        if years == 100000:
+            plot_periods(t, p1, bodies[trojans[0]].name, p2,\
+                bodies[trojans[1]].name)
+
         # End the loop after a million years.
         if years >= 10e6:
             in_margin = False
@@ -271,8 +290,13 @@ if __name__ == "__main__":
         help="Specify the simulation time step size in seconds", type=int)
     parser.add_argument("margin", help="Specify the allowed percent deviation"\
         + " from a 1:1 resonance in the Trojan pair", type=float)
+    parser.add_argument("-r, --RK4", dest="integrator", action="store_const",\
+        const=Integrator.RK4, help="Use the RK4 intetgration method")
+    parser.add_argument("-v, --Verlet", dest="integrator",\
+        action="store_const", const=Integrator.VERLET,\
+        help="Use the Verlet integration method")
     args = parser.parse_args()
 
     # Construct the system from the file, and run the simulation.
     bodies, trojans = parse_system(args.file)
-    simulate(bodies, args.step, trojans, args.margin)
+    simulate(bodies, args.step, trojans, args.margin, args.integrator)

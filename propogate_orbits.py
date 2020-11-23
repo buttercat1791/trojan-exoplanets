@@ -64,7 +64,6 @@ def propogate_Runge_Kutta(bodies: List[CelestialBody], time_step: float)\
         # The central body in the 0th position is assumed to be stationary.
         if i != 0:
             # Use RK4 method to update the velocity and position.
-            temp_pos = body.position
             k1v = g(i, body.position, bodies) * time_step
             k1x = body.velocity * time_step
             k2v = g(i, body.position + k1x / 2, bodies) * time_step
@@ -75,7 +74,7 @@ def propogate_Runge_Kutta(bodies: List[CelestialBody], time_step: float)\
             k4x = (body.velocity + k3v) * time_step
             body.velocity += (k1v + (2 * k2v) + (2 * k3v) + k4v) / 6
             body.position += (k1x + (2 * k2x) + (2 * k3x) + k4x) / 6
-            body.previous_position = temp_pos
+            body.acceleration = g(i, body.position, bodies)
 
     return bodies
 
