@@ -246,10 +246,14 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
             in_margin = check_margins(bodies[trojans[0]], bodies[trojans[1]],\
                 bodies[0], margin)
             # Print a status to indicate the program is working.
-            if years % 100 == 0:
+            if years % 1000 == 0:
                 print(f"{years} years elapsed")
                 print(f"P1 = {bodies[trojans[0]].period(bodies[0]) / DAY}")
                 print(f"P2 = {bodies[trojans[1]].period(bodies[0]) / DAY}")
+
+        # End the loop after a million years.
+        if years >= 10e6:
+            in_margin = False
 
     # After the simulation loop finishes, indicate how long it lasted.
     print(f"\nThe Trojan pair remained stable for {years} years.")
