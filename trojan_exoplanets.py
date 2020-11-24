@@ -189,14 +189,14 @@ def plot_periods(t: np.array, p1: np.array, p1_name: str, p2: np.array,\
     plt.title("Periods vs. Time")
     plt.xlabel("Time (Years)")
     plt.ylabel("Period (Days)")
-    plt.plot(t, p1, 'r-', label=p1_name)
-    plt.plot(t, p2, 'b-', label=p2_name)
+    plt.plot(t, p1, 'r-', label=p1_name, linewidth=1)
+    plt.plot(t, p2, 'b-', label=p2_name, linewidth=1)
     plt.legend()
     plt.show()
 
 
 def simulate(bodies: List[CelestialBody], time_step: int,\
-    trojans: list, margin: float, integrator: Integrator):
+    trojans: list, margin: float, integrator: Integrator, glowscript: bool):
     """
     Takes the parsed parameters and runs a simulation with them.
 
@@ -213,6 +213,7 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
     - margin (float): The percent deviation allowed from a 1:1 resonance 
     between the Trojan planets before the simulation is stopped.
     - integrator (Integrator enum): The integration method to be used.
+    - glowscript (bool): If true, the simulation will be visualized in VPython.
     """
 
     # Length of a year in seconds.
@@ -245,7 +246,7 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
 
     while in_margin:
         # Move the planets (the star stays still) and update the time.
-        bodies = propogate_Verlet(bodies=bodies, time_step=time_step)
+        bodies = propogator(bodies=bodies, time_step=time_step)
         time += time_step
 
         # Round down to get the number of elapsed years. Update the years 
@@ -264,11 +265,10 @@ def simulate(bodies: List[CelestialBody], time_step: int,\
                 print(f"{years} years elapsed")
                 print(f"P1 = {bodies[trojans[0]].period(bodies[0]) / DAY}")
                 print(f"P2 = {bodies[trojans[1]].period(bodies[0]) / DAY}")
-
-        # Plot the periods every 100,000 years.
-        if years == 100000:
-            plot_periods(t, p1, bodies[trojans[0]].name, p2,\
-                bodies[trojans[1]].name)
+            # Plot the periods every 10,000 years.
+            if years == 10000:
+                plot_periods(t, p1, bodies[trojans[0]].name, p2,\
+                    bodies[trojans[1]].name)
 
         # End the loop after a million years.
         if years >= 10e6:
@@ -295,8 +295,12 @@ if __name__ == "__main__":
     parser.add_argument("-v, --Verlet", dest="integrator",\
         action="store_const", const=Integrator.VERLET,\
         help="Use the Verlet integration method")
+    parser.add_argument("-g, --GlowScript", dest="glowscript",\
+        action="store_const", const=True, default=False,\
+        help="Visualize the simulation using GlowScript")
     args = parser.parse_args()
 
     # Construct the system from the file, and run the simulation.
     bodies, trojans = parse_system(args.file)
-    simulate(bodies, args.step, trojans, args.margin, args.integrator)
+    simulate(bodies, args.step, trojans, args.margin, args.integrator,\
+        args.glowscript)
